@@ -1,6 +1,6 @@
 import java.util.*;
 
-// ---------------- ROOM (Domain Model) ----------------
+// ---------------- ROOM ----------------
 class Room {
     String type;
     double price;
@@ -15,7 +15,7 @@ class Room {
     }
 }
 
-// ---------------- INVENTORY (UC3) ----------------
+// ---------------- INVENTORY ----------------
 class Inventory {
     private Map<String, Integer> availability = new HashMap<>();
 
@@ -32,24 +32,35 @@ class Inventory {
     }
 }
 
+// ---------------- RESERVATION (UC5) ----------------
+class Reservation {
+    String guestName;
+    String roomType;
+
+    Reservation(String guestName, String roomType) {
+        this.guestName = guestName;
+        this.roomType = roomType;
+    }
+
+    void display() {
+        System.out.println("Guest: " + guestName + " | Requested Room: " + roomType);
+    }
+}
+
 // ---------------- MAIN CLASS ----------------
 public class BookMyStayApp {
 
-    // ---------------- UC4: SEARCH (READ ONLY) ----------------
+    // ---------------- UC4 ----------------
     public static void searchRooms(Inventory inventory, Map<String, Room> roomMap) {
 
         System.out.println("\n=== Available Rooms (UC4) ===");
 
         for (String type : inventory.getRoomTypes()) {
-
             int count = inventory.getAvailability(type);
 
-            // Show only available rooms
             if (count > 0) {
-
                 Room room = roomMap.get(type);
 
-                // Defensive check
                 if (room != null) {
                     room.display();
                     System.out.println("Available Count: " + count);
@@ -59,13 +70,34 @@ public class BookMyStayApp {
         }
     }
 
-    // ---------------- MAIN METHOD ----------------
+    // ---------------- UC5: BOOKING REQUEST QUEUE ----------------
+    public static void handleBookingRequests() {
+
+        System.out.println("\n=== Booking Requests Queue (UC5) ===");
+
+        // Queue for FIFO
+        Queue<Reservation> bookingQueue = new LinkedList<>();
+
+        // Adding booking requests (arrival order)
+        bookingQueue.add(new Reservation("Alice", "Single"));
+        bookingQueue.add(new Reservation("Bob", "Suite"));
+        bookingQueue.add(new Reservation("Charlie", "Single"));
+
+        // Display queue (NO processing yet)
+        for (Reservation r : bookingQueue) {
+            r.display();
+        }
+
+        System.out.println("All requests stored in FIFO order. No booking done yet.");
+    }
+
+    // ---------------- MAIN ----------------
     public static void main(String[] args) {
 
-        // UC3: Inventory setup
+        // UC3: Inventory
         Inventory inventory = new Inventory();
         inventory.addRoom("Single", 2);
-        inventory.addRoom("Double", 0); // should NOT appear
+        inventory.addRoom("Double", 0);
         inventory.addRoom("Suite", 3);
 
         // UC4: Room details
@@ -74,7 +106,10 @@ public class BookMyStayApp {
         roomMap.put("Double", new Room("Double", 2000));
         roomMap.put("Suite", new Room("Suite", 5000));
 
-        // UC4: Search call
+        // UC4: Search
         searchRooms(inventory, roomMap);
+
+        // UC5: Booking Request Queue
+        handleBookingRequests();
     }
 }
