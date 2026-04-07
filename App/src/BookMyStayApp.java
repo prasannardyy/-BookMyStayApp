@@ -1,51 +1,80 @@
-import java.util.HashMap;
+import java.util.*;
 
-class RoomInventory {
+// ---------------- ROOM (Domain Model) ----------------
+class Room {
+    String type;
+    double price;
 
-    private HashMap<String, Integer> inventory;
-
-    public RoomInventory() {
-
-        inventory = new HashMap<>();
-
-        inventory.put("Single", 5);
-        inventory.put("Double", 3);
-        inventory.put("Suite", 2);
+    Room(String type, double price) {
+        this.type = type;
+        this.price = price;
     }
 
-    public int getAvailability(String roomType) {
-        return inventory.getOrDefault(roomType, 0);
-    }
-
-    public void updateAvailability(String roomType, int count) {
-        inventory.put(roomType, count);
-    }
-
-    public void displayInventory() {
-
-        System.out.println("Current Room Inventory:");
-
-        for (String roomType : inventory.keySet()) {
-            System.out.println(roomType + " Rooms Available: " + inventory.get(roomType));
-        }
+    void display() {
+        System.out.println("Room Type: " + type + ", Price: ₹" + price);
     }
 }
 
+// ---------------- INVENTORY (UC3) ----------------
+class Inventory {
+    private Map<String, Integer> availability = new HashMap<>();
+
+    void addRoom(String type, int count) {
+        availability.put(type, count);
+    }
+
+    int getAvailability(String type) {
+        return availability.getOrDefault(type, 0);
+    }
+
+    Set<String> getRoomTypes() {
+        return availability.keySet();
+    }
+}
+
+// ---------------- MAIN CLASS ----------------
 public class BookMyStayApp {
 
+    // ---------------- UC4: SEARCH (READ ONLY) ----------------
+    public static void searchRooms(Inventory inventory, Map<String, Room> roomMap) {
+
+        System.out.println("\n=== Available Rooms (UC4) ===");
+
+        for (String type : inventory.getRoomTypes()) {
+
+            int count = inventory.getAvailability(type);
+
+            // Show only available rooms
+            if (count > 0) {
+
+                Room room = roomMap.get(type);
+
+                // Defensive check
+                if (room != null) {
+                    room.display();
+                    System.out.println("Available Count: " + count);
+                    System.out.println("----------------------");
+                }
+            }
+        }
+    }
+
+    // ---------------- MAIN METHOD ----------------
     public static void main(String[] args) {
 
-        RoomInventory inventory = new RoomInventory();
+        // UC3: Inventory setup
+        Inventory inventory = new Inventory();
+        inventory.addRoom("Single", 2);
+        inventory.addRoom("Double", 0); // should NOT appear
+        inventory.addRoom("Suite", 3);
 
-        inventory.displayInventory();
+        // UC4: Room details
+        Map<String, Room> roomMap = new HashMap<>();
+        roomMap.put("Single", new Room("Single", 1000));
+        roomMap.put("Double", new Room("Double", 2000));
+        roomMap.put("Suite", new Room("Suite", 5000));
 
-        System.out.println("\nChecking availability for Single Room:");
-        System.out.println(inventory.getAvailability("Single"));
-
-        System.out.println("\nUpdating Double Room availability...");
-        inventory.updateAvailability("Double", 4);
-
-        System.out.println("\nUpdated Inventory:");
-        inventory.displayInventory();
+        // UC4: Search call
+        searchRooms(inventory, roomMap);
     }
 }
